@@ -10,7 +10,7 @@ const compareTwoSlides = (
     ]);
 }
 
-const compareSlides = (slides) => {
+const compareSlides = (slides = []) => {
   return slides.reduce((res, x, i, arr) => 
       [
         ...res, 
@@ -21,4 +21,8 @@ const compareSlides = (slides) => {
       ], 
       []
     );
+}
+
+const comparedTotal = (compared = []) => {
+  return compared.reduce((res, x) => res + x.left + x.right, 0);
 }
