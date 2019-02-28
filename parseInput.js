@@ -8,7 +8,8 @@ const parse = () => {
     let tags = raw.slice(2, 2 + raw[1]);
     res.push({
       type: raw[0],
-      tags
+      tags,
+      index: i - 1
     });
   }
   console.log(res);
