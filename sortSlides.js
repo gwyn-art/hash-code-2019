@@ -5,12 +5,12 @@ const sortSlides = (slides = []) => {
   slides = slides.slice(1, slides.length);
 
   for (let i = 0; i < slides.length; i++) {
-    let best = {max: 0, temp: []};
+    let best = {max: -1, temp: res};
 
     for (let j = 0; j < res.length + 1; j++) {
       const temp = [ ...res.slice(0, j), slides[i], ...res.slice(j)];
       const tempRes = compareSlides(temp);
-
+      
       if ( tempRes > best.max ) {
         best.max = tempRes;
         best.temp = temp;
