@@ -11,31 +11,15 @@ const generateVerticalSlide = (photo1, photo2) => {
 
 const getVertSlides = (data) => {
     let arrayOfVert = data.filter(photo => photo.type === 'V');
-    let result = []
+    let result = [];
 
-    for (let i = 0; i < arrayOfVert.length; i++) {
-        let base = arrayOfVert[0];
-        let rest = arrayOfVert.slice(1, arrayOfVert.length);
-        let slideToadd = {};
-        let pairedPhotoIndex = 0; 
+    arrayOfVert.sort((a, b) => (b.tags.length - a.tags.length));
 
-        max = 0;
-        
-        for (let j = 0; j < rest.length; j++) {
-            localMax = combineVerticalTags(base, rest[j]).length;
-            console.log(localMax)
-            if (localMax > max) {
-                slideToadd = generateVerticalSlide(base, rest[j]);
-                max = 0;
-            }
-        }
 
-        arrayOfVert.splice(0, 1);
-        arrayOfVert.splice(pairedPhotoIndex + 1, 1);
-
-        result.push(slideToadd);
+    for (let i = 0; i < arrayOfVert.length; i=i+2) {
+        let toAdd = generateVerticalSlide(arrayOfVert[i], arrayOfVert[i+1]);
+        result.push(toAdd);
     }
-
     return result;
 }
 
