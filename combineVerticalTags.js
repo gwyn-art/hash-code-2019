@@ -7,3 +7,5 @@ const combineVerticalTags = (vertical1, vertical2) => {
     const slideTagsArray = Array.from(slideTags)
     return slideTagsArray;
 }
+
+module.exports = combineVerticalTags
