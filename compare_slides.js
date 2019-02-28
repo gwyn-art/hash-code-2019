@@ -23,3 +23,5 @@ const compareSlides = (slides = []) => {
 const comparedTotal = (compared = []) => {
   return compared.reduce((res, x) => res + x, 0);
 }
+
+module.exports = (slides) => comparedTotal(compareSlides(slides));
