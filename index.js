@@ -1,5 +1,6 @@
 const parse = require('./parseInput');
 const mergeTags = require('./combineVerticalTags');
+const sortSlides = require('./sortSlides');
 
 const task = () => {
   let images = parse('assets/a_example.txt');
@@ -18,8 +19,10 @@ const task = () => {
       v = null;
     }
     return acc;
-  }, [])
-  console.log(slides);
+  }, []);
+  console.log('slides: ', slides);
+  const res = sortSlides(slides);
+  console.log('res: ', res);
 };
 
 task();
