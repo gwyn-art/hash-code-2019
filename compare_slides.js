@@ -14,15 +14,12 @@ const compareSlides = (slides = []) => {
   return slides.reduce((res, x, i, arr) => 
       [
         ...res, 
-        {
-          left: compareTwoSlides(arr[i - 1], x),
-          right: compareTwoSlides(x, arr[i + 1])
-        }
+        compareTwoSlides(x, arr[i + 1])
       ], 
       []
     );
 }
 
 const comparedTotal = (compared = []) => {
-  return compared.reduce((res, x) => res + x.left + x.right, 0);
+  return compared.reduce((res, x) => res + x, 0);
 }
