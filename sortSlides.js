@@ -1,15 +1,15 @@
 const compareSlides = require('./compare_slides');
 
 const sortSlides = (slides = []) => {
-  const res = [slides[0]];
+  let res = [slides[0]];
   slides = slides.slice(1, slides.length);
 
-  for (let i = 0; i < slides.length) {
+  for (let i = 0; i < slides.length; i++) {
     let best = {max: 0, temp: []};
 
     for (let j = 0; j < res.length + 1; j++) {
-      const temp = [ ...res.slice(0, j), slides[i], ...res.slice(j, res.length)];
-      const tempRes= compareSlides(temp);
+      const temp = [ ...res.slice(0, j), slides[i], ...res.slice(j)];
+      const tempRes = compareSlides(temp);
 
       if ( tempRes > best.max ) {
         best.max = tempRes;
