@@ -11,10 +11,22 @@ const countScore = (a, b) => {
   );
 };
 
+const countTotalScore = (slides) => {
+  let score = 0;
+  for (let i = 1; i < slides.length; i++) {
+    score += Math.min(
+      slides[i - 1].tags.filter(t => !slides[i].tags.includes(t)).length,
+      slides[i - 1].tags.filter(t => slides[i].tags.includes(t)).length,
+      slides[i].tags.filter(t => !slides[i - 1].tags.includes(t)).length,
+    )
+  }
+  return score;
+};
+
 const task = () => {
   // let time = new Date();
   // console.log(`${time.getUTCHours()}:${time.getUTCMinutes()}`);
-  let images = parse('assets/c_memorable_moments.txt');
+  let images = parse('assets/b.txt');
   let v = null;
   let slides = images.reduce((acc, cur) => {
     if (cur.type === 'H') acc.push({
@@ -31,92 +43,75 @@ const task = () => {
     }
     return acc;
   }, []);
-  console.log('slides length: ', slides.length);
   let tags = {};
   slides.forEach(s => s.tags.forEach(t => {
     if (tags.hasOwnProperty(t)) tags[t]++;
     else tags[t] = 1;
   }));
   slides = slides
-    .map(s => ({...s, value: s.tags.reduce((acc, cur) => tags[cur] > 1 ? acc + 1 : acc, 0)}))
+    .map(s => ({...s, value: s.tags.reduce((acc, cur) => tags[cur] > acc ? tags[cur] : acc, 0)}))
     .sort((a, b) => {
       if (a.value > b.value) return -1;
       else if (a.value < b.value) return 1;
       return 0;
     });
-  let sortedSlides = [slides.shift()];
-  let zero = [];
-  sortedSlides = slides.reduce((acc, cur) => {
+  console.log('slides length: ', slides.length);
+
+  let sorted = [slides.shift()];
+  let sortedLength = 1;
+  while (slides.length !== 0) {
     let index = null;
-    let score = 0;
-    let first = false;
-    let last = false;
-    for (let i = 0; i <= acc.length; i++) {
-      let left = i - 1 > -1 ? countScore(acc[i - 1], cur) : null;
-      let right = i < acc.length ? countScore(acc[i], cur) : null;
-      if (left === 0 || right === 0) continue;
-      let prevScore = null;
-      if (left !== null && right !== null) {
-        prevScore = countScore(acc[i -1], acc[i]);
-      }
-      if (left + right > score && left + right > prevScore) {
+    let max = 0;
+    for (let i = 0; i < slides.length; i++) {
+      let score = countScore(sorted[0], slides[i]);
+      if (score === 0) continue;
+      let val = score  / Math.min(
+        slides[i].tags.length,
+        sorted[0].tags.length
+      );
+      if (val >= 0.25 && val <= 0.75) {
         index = i;
-        score = left + right;
-        first = left === null;
-        last = right === null;
+        break;
+      }
+      if (score > max) {
+        index = i;
+        max = score;
       }
     }
     if (index !== null) {
-      if (first) return [cur].concat(acc);
-      else if (last) return acc.concat([cur]);
-      else return acc.slice(0, index).concat([cur]).concat(acc.slice(index));
+      sorted = [slides[index]].concat(sorted);
+      slides = slides.slice(0, index).concat(slides.slice(index + 1));
     }
-    zero.push(cur);
-    return acc;
-  }, sortedSlides);
-  console.log('sorted');
-  [1, 2, 3, 4, 5].forEach(() => {
-    zero = zero.filter(cur => {
-      let index = null;
-      let score = 0;
-      let first = false;
-      let last = false;
-      for (let i = 0; i <= sortedSlides.length; i++) {
-        let left = i - 1 > -1 ? countScore(sortedSlides[i - 1], cur) : null;
-        let right = i < sortedSlides.length ? countScore(sortedSlides[i], cur) : null;
-        if (left === 0 || right === 0) continue;
-        let prevScore = null;
-        if (left !== null && right !== null) {
-          prevScore = countScore(sortedSlides[i - 1], sortedSlides[i]);
-        }
-        if (left + right > score && left + right > prevScore) {
-          index = i;
-          score = left + right;
-          first = left === null;
-          last = right === null;
-        }
+    index = null;
+    max = 0;
+    for (let i = 0; i < slides.length; i++) {
+      let score = countScore(sorted[sorted.length - 1], slides[i]);
+      let val = score  / Math.min(
+        slides[i].tags.length,
+        sorted[sorted.length - 1].tags.length
+      );
+      if (val >= 0.25 && val <= 0.75) {
+        index = i;
+        break;
       }
-      if (index !== null) {
-        if (first) sortedSlides = [cur].concat(sortedSlides);
-        else if (last) sortedSlides = sortedSlides.concat([cur]);
-        else sortedSlides = sortedSlides.slice(0, index).concat([cur]).concat(sortedSlides.slice(index));
-        return false;
+      if (score > max) {
+        index = i;
+        max = score;
       }
-      return true;
-    });
-  });
-  console.log('sorted length: ', sortedSlides.length);
-  let score = 0;
-  for (let i = 1; i < sortedSlides.length; i++) {
-    score += Math.min(
-      sortedSlides[i - 1].tags.filter(t => !sortedSlides[i].tags.includes(t)).length,
-      sortedSlides[i - 1].tags.filter(t => sortedSlides[i].tags.includes(t)).length,
-      sortedSlides[i].tags.filter(t => !sortedSlides[i - 1].tags.includes(t)).length,
-      )
+    }
+    if (index !== null) {
+      sorted.push(slides[index]);
+      slides = slides.slice(0, index).concat(slides.slice(index + 1));
+    }
+    console.log(slides.length, sorted.length);
+    if (sortedLength === sorted.length) break;
+    else sortedLength = sorted.length;
   }
-  console.log('score: ', score);
-  let output = `${sortedSlides.length}\n${sortedSlides.map(s => s.index).join('\n')}`;
-  fs.writeFile('output_c.txt', output);
+
+  console.log('sorted length: ', sorted.length);
+  console.log('score: ', countTotalScore(sorted));
+  let output = `${sorted.length}\n${sorted.map(s => s.index).join('\n')}`;
+  fs.writeFile('output_b.txt', output);
   // time = new Date();
   // console.log(`${time.getUTCHours()}:${time.getUTCMinutes()}`);
 };
