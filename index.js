@@ -2,7 +2,18 @@ const fs = require('fs');
 const parse = require('./parseInput');
 const mergeTags = require('./combineVerticalTags');
 
+const countScore = (a, b) => {
+  let common = a.tags.filter(t => b.tags.includes(t)).length;
+  return Math.min(
+    a.tags.length - common,
+    common,
+    b.tags.length - common
+  );
+};
+
 const task = () => {
+  // let time = new Date();
+  // console.log(`${time.getUTCHours()}:${time.getUTCMinutes()}`);
   let images = parse('assets/c_memorable_moments.txt');
   let v = null;
   let slides = images.reduce((acc, cur) => {
@@ -41,15 +52,18 @@ const task = () => {
     let first = false;
     let last = false;
     for (let i = 0; i <= acc.length; i++) {
-      let left = i - 1 > -1 ? acc[i - 1].tags.filter(t => cur.tags.includes(t)).length : null;
-      let right = i < acc.length ? acc[i].tags.filter(t => cur.tags.includes(t)).length : null;
+      let left = i - 1 > -1 ? countScore(acc[i - 1], cur) : null;
+      let right = i < acc.length ? countScore(acc[i], cur) : null;
       if (left === 0 || right === 0) continue;
-      if (left + right > score) {
+      let prevScore = null;
+      if (left !== null && right !== null) {
+        prevScore = countScore(acc[i -1], acc[i]);
+      }
+      if (left + right > score && left + right > prevScore) {
         index = i;
         score = left + right;
-        if (left === null) first = true;
-        else if (right === null) last = true;
-        else left = right = false;
+        first = left === null;
+        last = right === null;
       }
     }
     if (index !== null) {
@@ -60,18 +74,33 @@ const task = () => {
     zero.push(cur);
     return acc;
   }, sortedSlides);
+  console.log('sorted');
   [1, 2, 3, 4, 5].forEach(() => {
     zero = zero.filter(cur => {
+      let index = null;
+      let score = 0;
+      let first = false;
+      let last = false;
       for (let i = 0; i <= sortedSlides.length; i++) {
-        let left = i - 1 > -1 ? sortedSlides[i - 1].tags.filter(t => cur.tags.includes(t)).length : null;
-        let right = i < sortedSlides.length ? sortedSlides[i].tags.filter(t => cur.tags.includes(t)).length : null;
+        let left = i - 1 > -1 ? countScore(sortedSlides[i - 1], cur) : null;
+        let right = i < sortedSlides.length ? countScore(sortedSlides[i], cur) : null;
         if (left === 0 || right === 0) continue;
-        if (left + right > 0) {
-          if (left === null) sortedSlides = [cur].concat(sortedSlides);
-          else if (right === null) sortedSlides = sortedSlides.concat([cur]);
-          else sortedSlides = sortedSlides.slice(0, i).concat([cur]).concat(sortedSlides.slice(i));
-          return false;
+        let prevScore = null;
+        if (left !== null && right !== null) {
+          prevScore = countScore(sortedSlides[i - 1], sortedSlides[i]);
         }
+        if (left + right > score && left + right > prevScore) {
+          index = i;
+          score = left + right;
+          first = left === null;
+          last = right === null;
+        }
+      }
+      if (index !== null) {
+        if (first) sortedSlides = [cur].concat(sortedSlides);
+        else if (last) sortedSlides = sortedSlides.concat([cur]);
+        else sortedSlides = sortedSlides.slice(0, index).concat([cur]).concat(sortedSlides.slice(index));
+        return false;
       }
       return true;
     });
@@ -88,6 +117,8 @@ const task = () => {
   console.log('score: ', score);
   let output = `${sortedSlides.length}\n${sortedSlides.map(s => s.index).join('\n')}`;
   fs.writeFile('output_c.txt', output);
+  // time = new Date();
+  // console.log(`${time.getUTCHours()}:${time.getUTCMinutes()}`);
 };
 
 task();
